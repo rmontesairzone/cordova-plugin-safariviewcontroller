@@ -19,7 +19,18 @@
     return;
   }
   if (![[urlString lowercaseString] hasPrefix:@"http"]) {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString: urlString]];
+    NSURL *url = [NSURL URLWithString:urlString];
+
+    if ([[UIApplication sharedApplication] canOpenURL:url]) {
+        if (@available(iOS 10.0, *)) {
+            [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+        } else {
+            [[UIApplication sharedApplication] openURL:url];
+        }
+    } else {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Cannot open URL"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
     return;
   }
   NSURL *url = [NSURL URLWithString:urlString];
